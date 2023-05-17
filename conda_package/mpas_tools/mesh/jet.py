@@ -31,7 +31,7 @@ def ujet(alat, lat0, lat1, uamp, rsph):
     return vals
 
 
-def init(name, save, rsph=1.E+0, pert=True):
+def init(name, save, rsph=6371220.0, pert=False):
     """
     INIT: Form SWE initial conditions for the barotropic jet
     case.
