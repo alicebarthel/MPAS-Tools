@@ -3,7 +3,7 @@ import time
 import numpy as np
 from scipy.sparse import csr_matrix, spdiags
 
-from mat import inv_3x3
+from mpas_tools.mesh.mat import inv_3x3
 
 
 def trsk_mats(mesh):

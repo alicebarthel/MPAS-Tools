@@ -7,10 +7,10 @@ from scipy.integrate import quadrature
 import xarray
 import argparse
 
-from stb import strtobool
+from mpas_tools.mesh.stb import strtobool
 
-from mesh import load_mesh, cell_quad, dual_quad
-from operators import trsk_mats
+from mpas_tools.mesh.msh import load_mesh, cell_quad, dual_quad
+from mpas_tools.mesh.operators import trsk_mats
 
 
 def ujet(alat, lat0, lat1, uamp, rsph):
@@ -184,6 +184,7 @@ def init(name, save, rsph=6371220.0, pert=False):
         vmag[mesh.vert.edge[:, 1] - 1] +
         vmag[mesh.vert.edge[:, 2] - 1]
     ) / 3.00
+    # unrm3d = xarray.broadcast(unrm3d, ds.refZMid) # no vert dim
 
     init = xarray.open_dataset(name)
     init.attrs.update({"sphere_radius": mesh.rsph})
@@ -207,21 +208,17 @@ def init(name, save, rsph=6371220.0, pert=False):
         ("nVertices", "vertexDegree"), mesh.vert.kite)
 
     init["h"] = (
-        ("Time", "nCells", "nVertLevels"),
-        np.reshape(hdel, (1, mesh.cell.size, 1)))
+        ("Time", "nCells"),
+        np.reshape(hdel, (1, mesh.cell.size)))
     init["u"] = (
-        ("Time", "nEdges", "nVertLevels"),
-        np.reshape(unrm, (1, mesh.edge.size, 1)))
+        ("Time", "nEdges"),
+        np.reshape(unrm, (1, mesh.edge.size)))
 
     init["streamfunction"] = (("nVertices"), vpsi)
     init["velocityTotals"] = (("nVertices"), vvel)
     init["vorticity"] = (
         ("nVertices"),
         (trsk.dual_curl_sums * unrm) / mesh.vert.area)
-
-    init["tracers"] = (
-        ("Time", "nCells", "nVertLevels", "nTracers"),
-        np.zeros((1, mesh.cell.size, 1, 1)))
 
     init["fCell"] = (("nCells"),
         2.00E+00 * erot * np.sin(mesh.cell.ylat))
